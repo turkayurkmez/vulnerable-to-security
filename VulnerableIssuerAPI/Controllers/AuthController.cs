@@ -16,7 +16,7 @@ namespace VulnerableIssuerAPI.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private const string JwtSecret = "secret";
+    private const string JwtSecret = "secret-for-jwt-token-min-128-bit-and-strong-secret!";
 
     private readonly VulnerableDbContext _context;
     private readonly OtpService _otpService;

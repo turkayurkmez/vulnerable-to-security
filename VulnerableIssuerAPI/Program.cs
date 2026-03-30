@@ -19,7 +19,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidateLifetime = false,
             ValidAlgorithms = new[] { "HS256", "HS384", "HS512", "none" },
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret-for-jwt-token-min-128-bit-and-strong-secret!"))
         };
     });
 
