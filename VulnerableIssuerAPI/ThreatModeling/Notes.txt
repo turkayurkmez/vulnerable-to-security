@@ -1,0 +1,15 @@
+﻿
+Her endpoint için aşağıdaki soruları sorun:
+ Spoofing: Başkası adına işlem yapılabilir mi?
+
+ Tampering: İşlemin verisi üzerinde manipülasyon yapılabilir mi?
+
+ Repudiation: İşlemi yapan kişi, bu işlemi inkar edebilir mi?
+
+ Information Disclosure: İstemciye fazla bilgi ifşası yapılıyor mu?
+
+ Denial of Service: Sistem yavaşlayabilir ya da bozulabilir mi?
+
+ Elevation of Privilege: Bir kişi, normalde yapamayacağı üs düzey bir işi yapabilir mi?
+
+
