@@ -35,7 +35,7 @@ public class CardController : ControllerBase
         {
             card.Id,
             card.CardNumber,
-            card.CVV,
+            //card.CVV,
             card.ExpiryMonth,
             card.ExpiryYear,
             card.CardHolderName,

@@ -74,7 +74,7 @@ public static class DataSeeder
             {
                 UserId = users[0].Id,
                 CardNumber = "4532123456789010",
-                CVV = "123",
+               // CVV = "123",
                 ExpiryMonth = "12",
                 ExpiryYear = "2026",
                 CardHolderName = "AHMET YILMAZ",
@@ -88,7 +88,7 @@ public static class DataSeeder
             {
                 UserId = users[0].Id,
                 CardNumber = "5425233430109903",
-                CVV = "456",
+                //CVV = "456",
                 ExpiryMonth = "06",
                 ExpiryYear = "2025",
                 CardHolderName = "AHMET YILMAZ",
@@ -102,7 +102,7 @@ public static class DataSeeder
             {
                 UserId = users[1].Id,
                 CardNumber = "4716158604553580",
-                CVV = "789",
+               // CVV = "789",
                 ExpiryMonth = "03",
                 ExpiryYear = "2027",
                 CardHolderName = "FATMA KAYA",
@@ -126,7 +126,7 @@ public static class DataSeeder
                 MerchantId = 1001,
                 Amount = 250.00m,
                 Currency = "TRY",
-                Status = "Authorized",
+                Status = Models.StateMachine.TransactionStatus.Authorized,
                 Description = "Trendyol - Elektronik",
                 CreatedAt = DateTime.UtcNow.AddDays(-5),
                 AuthorizationCode = "AUTH1"
@@ -138,7 +138,7 @@ public static class DataSeeder
                 MerchantId = 1002,
                 Amount = 89.90m,
                 Currency = "TRY",
-                Status = "Settled",
+                Status =  Models.StateMachine.TransactionStatus.Settled,
                 Description = "Migros Market",
                 CreatedAt = DateTime.UtcNow.AddDays(-3),
                 AuthorizationCode = "AUTH2"
@@ -150,7 +150,7 @@ public static class DataSeeder
                 MerchantId = 1003,
                 Amount = 4500.00m,
                 Currency = "TRY",
-                Status = "Captured",
+                Status = Models.StateMachine.TransactionStatus.Authorized,
                 Description = "Apple Store",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 AuthorizationCode = "AUTH3"
@@ -162,10 +162,10 @@ public static class DataSeeder
                 MerchantId = 1004,
                 Amount = 150.00m,
                 Currency = "TRY",
-                Status = "Failed",
+                Status =  Models.StateMachine.TransactionStatus.Declined,
                 Description = "Booking.com",
                 CreatedAt = DateTime.UtcNow.AddHours(-2),
-                FailureReason = "Yetersiz bakiye - DB hata kodu: ERR_INSUF_FUNDS_042"
+                //FailureReason = "Yetersiz bakiye - DB hata kodu: ERR_INSUF_FUNDS_042"
             },
             new Transaction
             {
@@ -174,7 +174,7 @@ public static class DataSeeder
                 MerchantId = 9999,
                 Amount = 0.01m,
                 Currency = "TRY",
-                Status = "Authorized",
+                Status = Models.StateMachine.TransactionStatus.Authorized,
                 Description = "BIN test küçük işlem",
                 Notes = "<script>alert('XSS')</script>",
                 CreatedAt = DateTime.UtcNow.AddMinutes(-30),

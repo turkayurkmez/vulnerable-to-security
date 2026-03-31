@@ -1,11 +1,14 @@
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using VulnerableIssuerAPI.Data;
+using VulnerableIssuerAPI.Models.StateMachine;
 using VulnerableIssuerAPI.SeedData;
 using VulnerableIssuerAPI.Services;
+using VulnerableIssuerAPI.ThreatModeling;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -36,13 +41,14 @@ builder.Services.AddCors(options =>
 });
 
 // EF Core + SQLite
-builder.Services.AddDbContext<VulnerableDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<VulnerableDbContext>();
 
 // Services
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<OtpService>();
 builder.Services.AddScoped<PasswordResetService>();
+builder.Services.AddScoped<TransactionStateMachine>();
+builder.Services.AddScoped<StrideAnalysisTool>();
 
 builder.Services.AddControllers();
 
@@ -89,9 +95,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-if (app.Environment.IsDevelopment() || args.Contains("--seed"))
+if (app.Environment.IsDevelopment())
 {
-    await DataSeeder.SeedAsync(app.Services);
+    // await DataSeeder.SeedAsync(app.Services);
+    var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<VulnerableDbContext>();
+    await dbContext.Database.MigrateAsync();
+
 }
 
 app.Run();

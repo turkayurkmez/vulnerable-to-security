@@ -5,7 +5,7 @@ public class Card
     public int Id { get; set; }
     public int UserId { get; set; }
     public string CardNumber { get; set; } = string.Empty;
-    public string CVV { get; set; } = string.Empty;
+    //public string CVV { get; set; } = string.Empty;
     public string ExpiryMonth { get; set; } = string.Empty;
     public string ExpiryYear { get; set; } = string.Empty;
     public string CardHolderName { get; set; } = string.Empty;
@@ -14,6 +14,8 @@ public class Card
     public bool IsActive { get; set; } = true;
     public string CardType { get; set; } = "CREDIT"; // "CREDIT", "DEBIT"
     public string BankCode { get; set; } = "ISB";
+
+    public decimal HoldBalance { get; set; } = 0.0M;
 
     public User User { get; set; } = null!;
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();

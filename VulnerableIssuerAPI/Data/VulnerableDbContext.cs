@@ -5,13 +5,18 @@ namespace VulnerableIssuerAPI.Data;
 
 public class VulnerableDbContext : DbContext
 {
-    public VulnerableDbContext(DbContextOptions<VulnerableDbContext> options) : base(options) { }
+    public VulnerableDbContext() { }
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Card> Cards => Set<Card>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<OtpRecord> OtpRecords => Set<OtpRecord>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlite("Data Source=vulnerable_issuer.db");
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,7 +33,7 @@ public class VulnerableDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.CardNumber).IsRequired();
-            entity.Property(e => e.CVV).IsRequired();
+            //entity.Property(e => e.CVV).IsRequired();
             entity.HasOne(e => e.User)
                   .WithMany(u => u.Cards)
                   .HasForeignKey(e => e.UserId);

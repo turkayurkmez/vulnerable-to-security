@@ -39,7 +39,7 @@ public class AccountController : ControllerBase
             {
                 c.Id,
                 c.CardNumber,
-                c.CVV,
+                //c.CVV,
                 c.ExpiryMonth,
                 c.ExpiryYear,
                 c.AvailableBalance

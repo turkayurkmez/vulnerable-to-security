@@ -21,9 +21,9 @@ public class TransactionController : ControllerBase
     }
 
     [HttpPost("authorize")]
-    public async Task<IActionResult> Authorize([FromBody] AuthorizationRequest request)
+    public async Task<IActionResult> Authorize([FromBody] AuthorizationRequest request, int userId)
     {
-        var response = await _authorizationService.ProcessAsync(request);
+        var response = await _authorizationService.PreAuthtorize(request, userId);
         return Ok(response);
     }
 
