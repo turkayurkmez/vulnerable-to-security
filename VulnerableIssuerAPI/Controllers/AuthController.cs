@@ -9,6 +9,8 @@ using VulnerableIssuerAPI.Data;
 using VulnerableIssuerAPI.Models.DTOs;
 using VulnerableIssuerAPI.Models.Entities;
 using VulnerableIssuerAPI.Services;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace VulnerableIssuerAPI.Controllers;
 
@@ -82,16 +84,25 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
+    [EnableRateLimiting("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
-        var token = await _passwordResetService.GenerateResetTokenAsync(request.Email);
+        await _passwordResetService.RequestPasswordReset(request.Email);
 
-        return Ok(new { Message = "Reset token oluşturuldu", ResetToken = token });
+        //TODO 1: Burada  token'ı e-posta ile gönderilmeli.
+        //TODO 4: Rate-limiting uygulanmalı.
+        return Ok(new { Message = "Reset token oluşturuldu ve e-posta ile gönderildi" });
     }
 
     [HttpPost("reset-password")]
+    [EnableRateLimiting("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
+
+        if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return BadRequest(new { error = "Token ve yeni şifre gereklidir" });
+        }
         var success = await _passwordResetService.ResetPasswordAsync(request.Token, request.NewPassword);
 
         if (!success)
