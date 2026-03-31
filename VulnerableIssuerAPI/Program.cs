@@ -33,25 +33,25 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-    {
+    //options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    //{
 
-        //partisyonlama anahtarı olarak IP adresini kullanıyoruz:
-        var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        //ya da user:
-        //var userId = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
+    //    //partisyonlama anahtarı olarak IP adresini kullanıyoruz:
+    //    var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    //    //ya da user:
+    //    //var userId = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
 
-        return RateLimitPartition.GetFixedWindowLimiter(ipAddress, _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 100,
-            Window = TimeSpan.FromMinutes(1),
-            QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
-            QueueLimit = 0
-        });
+    //    return RateLimitPartition.GetFixedWindowLimiter(ipAddress, _ => new FixedWindowRateLimiterOptions
+    //    {
+    //        PermitLimit = 100,
+    //        Window = TimeSpan.FromMinutes(1),
+    //        QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
+    //        QueueLimit = 0
+    //    });
 
 
 
-    });
+    //});
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.OnRejected = async (context, cancellationToken) =>
     {
@@ -144,6 +144,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 

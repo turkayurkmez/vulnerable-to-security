@@ -92,6 +92,8 @@ public class PasswordResetService
             CreatedAt = DateTime.Now
         });
 
+        await _context.SaveChangesAsync();
+
         await _emailService.SendPasswordResetEmailAsync(user.Email, token);
         _logger.LogInformation($"Şifre sıfırlama isteği başarılı: {email} adresine token gönderildi.");
 
