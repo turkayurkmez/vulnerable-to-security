@@ -14,21 +14,64 @@ using VulnerableIssuerAPI.ThreatModeling;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var keyProvider = new RsaKeyProvider();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuerSigningKey = false,
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = false,
-            ValidAlgorithms = new[] { "HS256", "HS384", "HS512", "none" },
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret-for-jwt-token-min-128-bit-and-strong-secret!"))
+            ValidateIssuerSigningKey = true,
+
+            ValidateIssuer = true,
+            ValidIssuer = "issuer-api",
+            ValidateAudience = true,
+            ValidAudience = "issuer-clients",
+            ValidateLifetime = true,
+            ValidAlgorithms = new[] { SecurityAlgorithms.RsaSha256 },
+            ClockSkew = TimeSpan.FromSeconds(30),
+            IssuerSigningKey = keyProvider.PublicKey
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+
+            OnChallenge = context =>
+            {
+                context.HandleResponse(); // Varsayılan 401 yanıtını engelle
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsJsonAsync(new
+                {
+                    error = "Token doğrulama başarısız. Lütfen geçerli bir token sağlayın."
+                });
+
+
+            },
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsJsonAsync(new
+                {
+                    error = "Erişim reddedildi. Bu kaynağa erişim izniniz yok."
+                });
+            }
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(option =>
+{
+    option.AddPolicy("AdminOnly", policy => policy.RequireClaim("role", "admin")
+                                                  .RequireClaim("scope", "full")
+
+    );
+
+    option.AddPolicy("UserOnly", policy => policy.RequireClaim("role", "user")
+                                                 .RequireClaim("scope", "full"));
+});
+
+
 
 
 builder.Services.AddRateLimiter(options =>
@@ -101,6 +144,11 @@ builder.Services.AddScoped<PasswordResetService>();
 builder.Services.AddScoped<TransactionStateMachine>();
 builder.Services.AddScoped<StrideAnalysisTool>();
 builder.Services.AddScoped<IEmailService, ConsoleEmailService>();
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddSingleton(keyProvider);
+builder.Services.AddSingleton<RefreshTokenStore>();
+//builder.Services.AddSingleton<RsaKeyProvider>();
+
 
 builder.Services.AddControllers();
 
@@ -138,7 +186,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(option =>
     {
         option.Title = "VulnerableIssuerAPI — API Reference";
-        option.Theme =  ScalarTheme.DeepSpace;
+        option.Theme = ScalarTheme.DeepSpace;
     });
 }
 

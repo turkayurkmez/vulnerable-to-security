@@ -9,6 +9,7 @@ namespace VulnerableIssuerAPI.Controllers;
 
 [ApiController]
 [Route("api/transactions")]
+[Authorize]
 public class TransactionController : ControllerBase
 {
     private readonly VulnerableDbContext _context;

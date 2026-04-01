@@ -47,8 +47,8 @@ public class AuthController : ControllerBase
 
         //   var passwordHash = ComputeMd5(request.Password);
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-        if (user.Password != passwordHash)
-            return Unauthorized(new { error = "Şifre hatalı" });
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))       
+            return Unauthorized(new { error = "Hatalı giriş" });
 
         if (!user.IsActive)
             return Unauthorized(new { error = "Hesap aktif değil" });
@@ -59,7 +59,7 @@ public class AuthController : ControllerBase
         {
             accessToken = pair.AccessToken,
             refreshToken = pair.RefreshToken,
-            expiresIn = 300 // 5 dakika
+            expiresIn = 300, // 5 dakika
             tokenType = "Bearer"
         });
     }
