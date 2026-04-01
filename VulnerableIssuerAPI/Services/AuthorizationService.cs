@@ -12,13 +12,15 @@ public class AuthorizationService
     private readonly ILogger<AuthorizationService> _logger;
 
     private readonly TransactionStateMachine _transactionStateMachine;
+    private readonly FraudDetectionService _fraudDetectionService;
 
 
-    public AuthorizationService(VulnerableDbContext context, ILogger<AuthorizationService> logger, TransactionStateMachine stateMachine)
+    public AuthorizationService(VulnerableDbContext context, ILogger<AuthorizationService> logger, TransactionStateMachine stateMachine, FraudDetectionService fraudDetectionService)
     {
         _context = context;
         _logger = logger;
         _transactionStateMachine = stateMachine;
+        _fraudDetectionService = fraudDetectionService;
     }
 
     public async Task<AuthorizationResponse> PreAuthtorize(AuthorizationRequest request,int requestingUserId )
@@ -71,7 +73,15 @@ public class AuthorizationService
             return new AuthorizationResponse { IsApproved = false };
         }
 
-      // card.AvailableBalance -= request.Amount;
+        // card.AvailableBalance -= request.Amount;
+       var result = await _fraudDetectionService.EvaluateAsync(card.CardNumber, request.MerchantId, request.Amount);
+        if (result.IsSuspicious)
+        {
+            _logger.LogWarning("Şüpheli işlem tespit edildi: {Reason}, Card No: {CardNumber}", result.Reason, card.CardNumber[^4..]);
+            return new AuthorizationResponse { IsApproved = false, ErrorMessage = result.Reason };
+        }
+
+
 
         var txnCount = await _context.Transactions.CountAsync();
         var transactINGuid = Guid.NewGuid().ToString("N");

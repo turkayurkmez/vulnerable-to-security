@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using VulnerableIssuerAPI.Data;
+using VulnerableIssuerAPI.Middlewares;
 using VulnerableIssuerAPI.Models.StateMachine;
 using VulnerableIssuerAPI.SeedData;
 using VulnerableIssuerAPI.Services;
@@ -147,10 +148,11 @@ builder.Services.AddScoped<IEmailService, ConsoleEmailService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddSingleton(keyProvider);
 builder.Services.AddSingleton<RefreshTokenStore>();
+builder.Services.AddScoped<FraudDetectionService>();
 //builder.Services.AddSingleton<RsaKeyProvider>();
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddOpenApi();
 
@@ -195,6 +197,8 @@ app.UseAuthorization();
 
 app.UseRateLimiter();
 
+app.UseMiddleware<SecurityHeaderMiddleware>();
+
 app.MapControllers();
 
 if (app.Environment.IsDevelopment())
@@ -206,4 +210,5 @@ if (app.Environment.IsDevelopment())
 
 }
 
+app.MapDefaultControllerRoute();
 app.Run();
