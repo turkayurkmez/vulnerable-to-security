@@ -16,6 +16,7 @@ public class OtpService
     public async Task<string> GenerateOtpAsync(int userId, string purpose)
     {
         var random = new Random();
+        //TODO 6.2: Tahmin edilebilir OTP kodu oluşturma yöntemini düzeltin (örneğin, kriptografik olarak güvenli rastgele sayı üreteci kullanarak).
         var otpCode = random.Next(1000, 9999).ToString();
 
         var otpRecord = new OtpRecord
@@ -36,6 +37,7 @@ public class OtpService
 
     public async Task<bool> VerifyOtpAsync(int userId, string otpCode, string purpose)
     {
+        //TODO 6.3: aynı OTP code'u tekrar çalıştırılabilir. Bu nedenle, db'de işareletnmeli.
         var otp = await _context.OtpRecords
             .Where(o => o.UserId == userId
                      && o.OtpCode == otpCode

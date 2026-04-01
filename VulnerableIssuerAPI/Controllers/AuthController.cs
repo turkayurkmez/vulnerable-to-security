@@ -23,12 +23,17 @@ public class AuthController : ControllerBase
     private readonly VulnerableDbContext _context;
     private readonly OtpService _otpService;
     private readonly PasswordResetService _passwordResetService;
+    private readonly JwtService _jwtService;
+    private readonly RsaKeyProvider _rsaKeyProvider;
 
-    public AuthController(VulnerableDbContext context, OtpService otpService, PasswordResetService passwordResetService)
+    public AuthController(VulnerableDbContext context, OtpService otpService, PasswordResetService passwordResetService, JwtService jwtService, RsaKeyProvider rsaKeyProvider)
     {
         _context = context;
         _otpService = otpService;
         _passwordResetService = passwordResetService;
+        _jwtService = jwtService;
+        _rsaKeyProvider = rsaKeyProvider;
+
     }
 
     [HttpPost("login")]
@@ -40,23 +45,38 @@ public class AuthController : ControllerBase
         if (user == null)
             return Unauthorized(new { error = "Kullanıcı bulunamadı" });
 
-        var passwordHash = ComputeMd5(request.Password);
+        //   var passwordHash = ComputeMd5(request.Password);
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
         if (user.Password != passwordHash)
             return Unauthorized(new { error = "Şifre hatalı" });
 
         if (!user.IsActive)
             return Unauthorized(new { error = "Hesap aktif değil" });
 
-        var token = GenerateWeakJwtToken(user);
+        var pair = _jwtService.GenerateTokenPair(user.Id, user.Role);
 
-        return Ok(new LoginResponse
+        return Ok(new
         {
-            Token = token,
-            UserId = user.Id,
-            Username = user.Username,
-            Role = user.Role,
-            Email = user.Email,
-            FullName = user.FullName
+            accessToken = pair.AccessToken,
+            refreshToken = pair.RefreshToken,
+            expiresIn = 300 // 5 dakika
+            tokenType = "Bearer"
+        });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+    {
+        var pair = _jwtService.RefreshToken(request.RefreshToken);
+        if (pair == null)
+            return Unauthorized(new { error = "Oturum süresi dolmuş. Lütfen tekrar login olun." });
+
+        return Ok(new
+        {
+            accessToken = pair.AccessToken,
+            refreshToken = pair.RefreshToken,
+            expiresIn = 300, // 5 dakika
+            tokenType = "Bearer"
         });
     }
 
@@ -68,7 +88,7 @@ public class AuthController : ControllerBase
             return NotFound(new { error = "Kullanıcı bulunamadı" });
 
         var otpCode = await _otpService.GenerateOtpAsync(request.UserId, request.Purpose);
-
+        //TODO 6.1: OTP kodunu güvenli bir şekilde iletin (örneğin, SMS veya e-posta ile gönderin).
         return Ok(new { Message = "OTP gönderildi", OtpCode = otpCode, UserId = request.UserId });
     }
 
@@ -138,4 +158,6 @@ public class AuthController : ControllerBase
         var hash = MD5.HashData(Encoding.UTF8.GetBytes(input));
         return Convert.ToHexString(hash).ToLower();
     }
+
+    public record RefreshTokenRequest(string RefreshToken);
 }
