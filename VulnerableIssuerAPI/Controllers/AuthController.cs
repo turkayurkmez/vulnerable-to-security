@@ -11,6 +11,8 @@ using VulnerableIssuerAPI.Models.Entities;
 using VulnerableIssuerAPI.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
+using VulnerableIssuerAPI.Fingerprinting;
 
 namespace VulnerableIssuerAPI.Controllers;
 
@@ -25,18 +27,24 @@ public class AuthController : ControllerBase
     private readonly PasswordResetService _passwordResetService;
     private readonly JwtService _jwtService;
     private readonly RsaKeyProvider _rsaKeyProvider;
+    private readonly FingerprintingService _fingerprintingService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(VulnerableDbContext context, OtpService otpService, PasswordResetService passwordResetService, JwtService jwtService, RsaKeyProvider rsaKeyProvider)
+    public AuthController(VulnerableDbContext context, OtpService otpService, PasswordResetService passwordResetService, JwtService jwtService, RsaKeyProvider rsaKeyProvider, FingerprintingService fingerprintingService, ILogger<AuthController> logger)
     {
         _context = context;
         _otpService = otpService;
         _passwordResetService = passwordResetService;
         _jwtService = jwtService;
         _rsaKeyProvider = rsaKeyProvider;
+        _fingerprintingService = fingerprintingService;
+        _logger = logger;
+
 
     }
 
     [HttpPost("login")]
+ 
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var user = await _context.Users
@@ -53,10 +61,41 @@ public class AuthController : ControllerBase
         if (!user.IsActive)
             return Unauthorized(new { error = "Hesap aktif değil" });
 
+
+        var fp = DeviceFingerprinting.FromHttpContext(HttpContext);
+
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";//not: eğer proxy arkasındaysanız, gerçek IP'yi almak için X-Forwarded-For header'ını kontrol etmeniz gerekebilir.
+        
+        var eval = _fingerprintingService.Evaluate(user.Id, fp, ip);
+
+        _logger.LogInformation("Login device checked: UserId={UserId}, DeviceTrust={DeviceTrust}, Reason={Reason}, Hash={DeviceHash}", user.Id, eval.Trust, eval.Reason, fp.Hash);
+
+        if (eval.Trust == DeviceTrust.Suspicious)
+        {
+            return Unauthorized(new { error = "Giriş engellendi" });
+        }
+
+        if (eval.Trust == DeviceTrust.New)
+        {
+            return Ok(new
+            {
+                requiresMfa = true,
+                deviceHash = fp.Hash,
+                message = "Yeni bir cihazdan giriş yapıyorsunuz. Lütfen OTP doğrulaması yapın."
+
+            });
+        }
+
+     
+
+
+
         var pair = _jwtService.GenerateTokenPair(user.Id, user.Role);
 
         return Ok(new
         {
+            requiresMfa = false,
+            deviceHash = fp.Hash,
             accessToken = pair.AccessToken,
             refreshToken = pair.RefreshToken,
             expiresIn = 300, // 5 dakika

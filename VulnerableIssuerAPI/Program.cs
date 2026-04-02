@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using VulnerableIssuerAPI.Data;
+using VulnerableIssuerAPI.Fingerprinting;
 using VulnerableIssuerAPI.Middlewares;
 using VulnerableIssuerAPI.Models.StateMachine;
 using VulnerableIssuerAPI.SeedData;
@@ -149,6 +150,7 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddSingleton(keyProvider);
 builder.Services.AddSingleton<RefreshTokenStore>();
 builder.Services.AddScoped<FraudDetectionService>();
+builder.Services.AddSingleton<FingerprintingService>();
 //builder.Services.AddSingleton<RsaKeyProvider>();
 
 
