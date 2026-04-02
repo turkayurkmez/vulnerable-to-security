@@ -1,0 +1,70 @@
+﻿@model VulnerableToSecureMVC.Models.SecureLoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h1>Login</h1>
+
+<h4>SecureLoginViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Login">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" autocomplete="off" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <input type="hidden" asp-for="ReturnUrl" />
+
+          
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+
+    <div>
+        <p>@ViewBag.Error</p>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@* Client-side validation scripts sadece UX için kullanılır. Güvenlik için sunucu tarafı doğrulama gereklidir. *@
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            // Client-side validation is handled by the included validation scripts.
+            // No additional JavaScript is necessary for basic validation.
+            $('form').submit(function (event) {
+                // Optionally, you can add custom client-side validation here.
+                // However, remember that all critical validation must be performed on the server side.
+                let email = $('#Email').val();
+                let password = $('#Password').val();
+
+                if (!email || !password) {
+                    event.preventDefault(); // Prevent form submission
+                    alert('Please fill in both email and password fields.');
+                }
+
+                //sunucuya gitmesin:
+
+
+            });
+        });
+    </script>
+}
