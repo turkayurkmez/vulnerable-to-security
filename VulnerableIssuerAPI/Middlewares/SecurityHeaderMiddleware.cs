@@ -16,7 +16,7 @@
             {
                 var headers = context.Response.Headers;
                 headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";// HSTS: HTTPS kullanımını zorunlu kılar  (tarayıcıya en fazla 1 yıl boyunca bu bilgiyi hatırlatır)
-                headers["Content-Security-Policy"] = "default-src 'none'; script-src 'self' from-ancestors 'none'"; //CSP: Kaynakların nereden yüklenebileceğini belirler
+               // headers["Content-Security-Policy"] =  "script-src 'self' from-ancestors 'none'"; //CSP: Kaynakların nereden yüklenebileceğini belirler
                 headers["Cache-Control"] = "no-store"; //Önbellekleme kontrolü: Hassas verilerin tarayıcı önbelleğinde saklanmasını engeller"]
 
                 headers["Permission-Policy"] = "geolocation=(), microphone=(), camera=()"; //İzin politikası: Tarayıcı özelliklerine erişimi sınırlar

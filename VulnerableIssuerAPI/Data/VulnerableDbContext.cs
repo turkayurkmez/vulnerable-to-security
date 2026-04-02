@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VulnerableIssuerAPI.Models.Entities;
+using VulnerableIssuerAPI.SeedData;
 
 namespace VulnerableIssuerAPI.Data;
 
@@ -64,5 +65,9 @@ public class VulnerableDbContext : DbContext
                   .WithMany(u => u.PasswordResetTokens)
                   .HasForeignKey(e => e.UserId);
         });
+
+        
+
+         DataSeeder.SeedAsync(this).GetAwaiter();
     }
 }

@@ -9,14 +9,14 @@ namespace VulnerableIssuerAPI.SeedData;
 
 public static class DataSeeder
 {
-    public static async Task SeedAsync(IServiceProvider serviceProvider)
+    public static async Task SeedAsync(VulnerableDbContext context)
     {
-        using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<VulnerableDbContext>();
+        //using var scope = serviceProvider.CreateScope();
+        //var context = scope.ServiceProvider.GetRequiredService<VulnerableDbContext>();
 
-        await context.Database.EnsureCreatedAsync();
+        //await context.Database.EnsureCreatedAsync();
 
-        if (await context.Users.AnyAsync()) return;
+        //if (await context.Users.AnyAsync()) return;
 
         var users = new List<User>
         {
@@ -165,7 +165,7 @@ public static class DataSeeder
                 Status =  Models.StateMachine.TransactionStatus.Declined,
                 Description = "Booking.com",
                 CreatedAt = DateTime.UtcNow.AddHours(-2),
-                //FailureReason = "Yetersiz bakiye - DB hata kodu: ERR_INSUF_FUNDS_042"
+                UpdatedAt = DateTime.UtcNow.AddHours(-1)
             },
             new Transaction
             {
